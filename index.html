@@ -214,9 +214,7 @@
                         </button>
                         <!-- Boxel -->
                         <button id="btnSkinBoxel" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
-                            <div class="w-8 h-8 bg-cyan-400 mb-1 flex items-center justify-center gap-1">
-                                <div class="w-2 h-2 bg-white"></div><div class="w-2 h-2 bg-white"></div>
-                            </div>
+                            <div class="w-8 h-8 bg-cyan-400 mb-1"></div>
                             <span class="text-[10px] text-gray-300 uppercase">Boxel</span>
                             <div id="boxelLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
                                 <span class="text-xl">🔒</span>
@@ -301,6 +299,26 @@
                                 <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
                             </div>
                         </button>
+                        <!-- Sonic -->
+                        <button id="btnSkinSonic" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="text-2xl font-bold text-blue-500 mb-1">S</div>
+                            <span class="text-[10px] text-gray-300 uppercase">Sonic</span>
+                            <div id="sonicLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Dirt Block -->
+                        <button id="btnSkinDirt" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-[#5d4037] mb-1 flex flex-col">
+                                <div class="w-full h-2 bg-[#4caf50]"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-300 uppercase">Dirt</span>
+                            <div id="dirtLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
@@ -343,9 +361,7 @@
                     <!-- Boxel Rebound -->
                     <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-cyan-400 mb-1 flex items-center justify-center gap-1">
-                                <div class="w-2 h-2 bg-white"></div><div class="w-2 h-2 bg-white"></div>
-                            </div>
+                            <div class="w-10 h-10 bg-cyan-400 mb-1"></div>
                             <div class="text-left">
                                 <div class="font-bold text-white text-lg">Boxel Rebound</div>
                                 <div class="text-sm text-gray-400">10,000 Coins</div>
@@ -443,6 +459,32 @@
                         </div>
                         <button id="btnBuyLuigi" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
                     </div>
+
+                    <!-- Sonic -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="text-3xl font-bold text-blue-500">S</div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Sonic</div>
+                                <div class="text-sm text-gray-400">120,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuySonic" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Dirt Block -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-[#5d4037] flex flex-col border border-gray-900">
+                                <div class="w-full h-3 bg-[#4caf50]"></div>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Dirt Block</div>
+                                <div class="text-sm text-gray-400">150,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyDirt" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -492,6 +534,8 @@
         const btnSkinPikachu = document.getElementById('btnSkinPikachu');
         const btnSkinMario = document.getElementById('btnSkinMario');
         const btnSkinLuigi = document.getElementById('btnSkinLuigi');
+        const btnSkinSonic = document.getElementById('btnSkinSonic');
+        const btnSkinDirt = document.getElementById('btnSkinDirt');
         
         const invisLock = document.getElementById('invisLock');
         const susLock = document.getElementById('susLock');
@@ -506,6 +550,8 @@
         const pikachuLock = document.getElementById('pikachuLock');
         const marioLock = document.getElementById('marioLock');
         const luigiLock = document.getElementById('luigiLock');
+        const sonicLock = document.getElementById('sonicLock');
+        const dirtLock = document.getElementById('dirtLock');
         const defaultSkinPreview = document.getElementById('defaultSkinPreview');
         
         // Shop UI
@@ -520,6 +566,8 @@
         const btnBuyPikachu = document.getElementById('btnBuyPikachu');
         const btnBuyMario = document.getElementById('btnBuyMario');
         const btnBuyLuigi = document.getElementById('btnBuyLuigi');
+        const btnBuySonic = document.getElementById('btnBuySonic');
+        const btnBuyDirt = document.getElementById('btnBuyDirt');
         const closeShopBtn = document.getElementById('closeShopBtn');
 
         let activeSkin = localStorage.getItem('hussValleySkin') || 'default';
@@ -533,6 +581,8 @@
         let ownsPikachu = localStorage.getItem('hussValleyOwnsPikachu') === 'true';
         let ownsMario = localStorage.getItem('hussValleyOwnsMario') === 'true';
         let ownsLuigi = localStorage.getItem('hussValleyOwnsLuigi') === 'true';
+        let ownsSonic = localStorage.getItem('hussValleyOwnsSonic') === 'true';
+        let ownsDirt = localStorage.getItem('hussValleyOwnsDirt') === 'true';
 
         // Core Variables
         let gameSpeed = 0;
@@ -612,18 +662,73 @@
             }
             
             // Other Shop Skin Checks
-            if (ownsImpossible) { impossibleLock.classList.add('hidden'); } else { impossibleLock.classList.remove('hidden'); if (activeSkin === 'impossible') activeSkin = 'default'; }
-            if (ownsPacman) { pacmanLock.classList.add('hidden'); } else { pacmanLock.classList.remove('hidden'); if (activeSkin === 'pacman') activeSkin = 'default'; }
-            if (ownsGhost) { ghostLock.classList.add('hidden'); } else { ghostLock.classList.remove('hidden'); if (activeSkin === 'ghost') activeSkin = 'default'; }
-            if (ownsBitTrip) { bitTripLock.classList.add('hidden'); } else { bitTripLock.classList.remove('hidden'); if (activeSkin === 'bittrip') activeSkin = 'default'; }
-            if (ownsPikachu) { pikachuLock.classList.add('hidden'); } else { pikachuLock.classList.remove('hidden'); if (activeSkin === 'pikachu') activeSkin = 'default'; }
-            if (ownsMario) { marioLock.classList.add('hidden'); } else { marioLock.classList.remove('hidden'); if (activeSkin === 'mario') activeSkin = 'default'; }
-            if (ownsLuigi) { luigiLock.classList.add('hidden'); } else { luigiLock.classList.remove('hidden'); if (activeSkin === 'luigi') activeSkin = 'default'; }
+            if (ownsImpossible) {
+                impossibleLock.classList.add('hidden');
+            } else {
+                impossibleLock.classList.remove('hidden');
+                if (activeSkin === 'impossible') activeSkin = 'default';
+            }
+            
+            if (ownsPacman) {
+                pacmanLock.classList.add('hidden');
+            } else {
+                pacmanLock.classList.remove('hidden');
+                if (activeSkin === 'pacman') activeSkin = 'default';
+            }
+            
+            if (ownsGhost) {
+                ghostLock.classList.add('hidden');
+            } else {
+                ghostLock.classList.remove('hidden');
+                if (activeSkin === 'ghost') activeSkin = 'default';
+            }
+            
+            if (ownsBitTrip) {
+                bitTripLock.classList.add('hidden');
+            } else {
+                bitTripLock.classList.remove('hidden');
+                if (activeSkin === 'bittrip') activeSkin = 'default';
+            }
+            
+            if (ownsPikachu) {
+                pikachuLock.classList.add('hidden');
+            } else {
+                pikachuLock.classList.remove('hidden');
+                if (activeSkin === 'pikachu') activeSkin = 'default';
+            }
+            
+            if (ownsMario) {
+                marioLock.classList.add('hidden');
+            } else {
+                marioLock.classList.remove('hidden');
+                if (activeSkin === 'mario') activeSkin = 'default';
+            }
+            
+            if (ownsLuigi) {
+                luigiLock.classList.add('hidden');
+            } else {
+                luigiLock.classList.remove('hidden');
+                if (activeSkin === 'luigi') activeSkin = 'default';
+            }
+            
+            if (ownsSonic) {
+                sonicLock.classList.add('hidden');
+            } else {
+                sonicLock.classList.remove('hidden');
+                if (activeSkin === 'sonic') activeSkin = 'default';
+            }
+            
+            if (ownsDirt) {
+                dirtLock.classList.add('hidden');
+            } else {
+                dirtLock.classList.remove('hidden');
+                if (activeSkin === 'dirt') activeSkin = 'default';
+            }
 
             localStorage.setItem('hussValleySkin', activeSkin);
 
             // Highlight selected skin
-            [btnSkinDefault, btnSkinInvis, btnSkinSus, btnSkinChicken, btnSkinDino, btnSkinBoxel, btnSkinGeo, btnSkinImpossible, btnSkinPacman, btnSkinGhost, btnSkinBitTrip, btnSkinPikachu, btnSkinMario, btnSkinLuigi].forEach(btn => btn.classList.replace('border-cyan-400', 'border-gray-600'));
+            [btnSkinDefault, btnSkinInvis, btnSkinSus, btnSkinChicken, btnSkinDino, btnSkinBoxel, btnSkinGeo, btnSkinImpossible, btnSkinPacman, btnSkinGhost, btnSkinBitTrip, btnSkinPikachu, btnSkinMario, btnSkinLuigi, btnSkinSonic, btnSkinDirt].forEach(btn => btn.classList.replace('border-cyan-400', 'border-gray-600'));
             
             if (activeSkin === 'default') {
                 btnSkinDefault.classList.replace('border-gray-600', 'border-cyan-400');
@@ -653,6 +758,10 @@
                 btnSkinMario.classList.replace('border-gray-600', 'border-cyan-400');
             } else if (activeSkin === 'luigi') {
                 btnSkinLuigi.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'sonic') {
+                btnSkinSonic.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'dirt') {
+                btnSkinDirt.classList.replace('border-gray-600', 'border-cyan-400');
             }
         }
 
@@ -670,6 +779,8 @@
                 { owns: ownsPikachu, btn: btnBuyPikachu, price: 50000 },
                 { owns: ownsMario, btn: btnBuyMario, price: 100000 },
                 { owns: ownsLuigi, btn: btnBuyLuigi, price: 100000 },
+                { owns: ownsSonic, btn: btnBuySonic, price: 120000 },
+                { owns: ownsDirt, btn: btnBuyDirt, price: 150000 },
             ];
 
             shopUpdates.forEach(item => {
@@ -734,13 +845,41 @@
             }
         });
 
-        btnSkinImpossible.addEventListener('click', () => { if (ownsImpossible) { activeSkin = 'impossible'; updateSkinUI(); } });
-        btnSkinPacman.addEventListener('click', () => { if (ownsPacman) { activeSkin = 'pacman'; updateSkinUI(); } });
-        btnSkinGhost.addEventListener('click', () => { if (ownsGhost) { activeSkin = 'ghost'; updateSkinUI(); } });
-        btnSkinBitTrip.addEventListener('click', () => { if (ownsBitTrip) { activeSkin = 'bittrip'; updateSkinUI(); } });
-        btnSkinPikachu.addEventListener('click', () => { if (ownsPikachu) { activeSkin = 'pikachu'; updateSkinUI(); } });
-        btnSkinMario.addEventListener('click', () => { if (ownsMario) { activeSkin = 'mario'; updateSkinUI(); } });
-        btnSkinLuigi.addEventListener('click', () => { if (ownsLuigi) { activeSkin = 'luigi'; updateSkinUI(); } });
+        btnSkinImpossible.addEventListener('click', () => { 
+            if (ownsImpossible) { activeSkin = 'impossible'; updateSkinUI(); } 
+        });
+        
+        btnSkinPacman.addEventListener('click', () => { 
+            if (ownsPacman) { activeSkin = 'pacman'; updateSkinUI(); } 
+        });
+        
+        btnSkinGhost.addEventListener('click', () => { 
+            if (ownsGhost) { activeSkin = 'ghost'; updateSkinUI(); } 
+        });
+        
+        btnSkinBitTrip.addEventListener('click', () => { 
+            if (ownsBitTrip) { activeSkin = 'bittrip'; updateSkinUI(); } 
+        });
+        
+        btnSkinPikachu.addEventListener('click', () => { 
+            if (ownsPikachu) { activeSkin = 'pikachu'; updateSkinUI(); } 
+        });
+        
+        btnSkinMario.addEventListener('click', () => { 
+            if (ownsMario) { activeSkin = 'mario'; updateSkinUI(); } 
+        });
+        
+        btnSkinLuigi.addEventListener('click', () => { 
+            if (ownsLuigi) { activeSkin = 'luigi'; updateSkinUI(); } 
+        });
+        
+        btnSkinSonic.addEventListener('click', () => { 
+            if (ownsSonic) { activeSkin = 'sonic'; updateSkinUI(); } 
+        });
+        
+        btnSkinDirt.addEventListener('click', () => { 
+            if (ownsDirt) { activeSkin = 'dirt'; updateSkinUI(); } 
+        });
 
         // Shop Interactions
         openShopBtn.addEventListener('click', () => {
@@ -777,6 +916,8 @@
         setupBuyButton(btnBuyPikachu, 50000, 'hussValleyOwnsPikachu', () => ownsPikachu = true);
         setupBuyButton(btnBuyMario, 100000, 'hussValleyOwnsMario', () => ownsMario = true);
         setupBuyButton(btnBuyLuigi, 100000, 'hussValleyOwnsLuigi', () => ownsLuigi = true);
+        setupBuyButton(btnBuySonic, 120000, 'hussValleyOwnsSonic', () => ownsSonic = true);
+        setupBuyButton(btnBuyDirt, 150000, 'hussValleyOwnsDirt', () => ownsDirt = true);
 
         // Resize Canvas
         function resize() {
@@ -1079,13 +1220,6 @@
                     let yOff = -bh/2 + bh*0.5 - (this.isDucking ? bh*0.25 : 0);
                     
                     ctx.fillRect(-bw/2, yOff, bw, sqSize);
-                    
-                    // Inner details (eyes)
-                    ctx.fillStyle = '#fff';
-                    ctx.shadowBlur = 0;
-                    let eyeY = yOff + sqSize * 0.3;
-                    ctx.fillRect(-bw*0.2, eyeY, bw*0.2, bw*0.2);
-                    ctx.fillRect(bw*0.1, eyeY, bw*0.2, bw*0.2);
                 } else if (activeSkin === 'geo') {
                     const bw = this.width;
                     const bh = this.height;
@@ -1247,6 +1381,64 @@
                         ctx.fillStyle = isMario ? '#3b82f6' : '#1d4ed8';
                         ctx.fillRect(-bw/2, 0, bw, bh*0.5);
                     }
+                } else if (activeSkin === 'sonic') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(37, 99, 235, 0.5)';
+                    
+                    if (!this.isDucking) {
+                        ctx.fillStyle = '#2563eb'; // Sonic blue
+                        ctx.beginPath();
+                        ctx.arc(0, -bh*0.1, bw/2, 0, Math.PI*2); // Body/Head
+                        ctx.fill();
+                        // Spikes
+                        ctx.beginPath(); ctx.moveTo(-bw*0.2, -bh*0.1); ctx.lineTo(-bw*0.8, -bh*0.3); ctx.lineTo(0, -bh*0.4); ctx.fill();
+                        ctx.beginPath(); ctx.moveTo(-bw*0.1, 0); ctx.lineTo(-bw*0.7, 0); ctx.lineTo(0, -bh*0.1); ctx.fill();
+                        
+                        // Eye area
+                        ctx.fillStyle = '#fef08a'; // Peach/Tan
+                        ctx.fillRect(bw*0.1, -bh*0.2, bw*0.3, bh*0.2);
+                        // Eye
+                        ctx.fillStyle = '#000'; ctx.fillRect(bw*0.25, -bh*0.15, 3, 6);
+                        
+                        // Red shoes
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(-bw*0.3, bh/2 - bh*0.1, bw*0.25, bh*0.1);
+                        ctx.fillRect(bw*0.1, bh/2 - bh*0.1, bw*0.25, bh*0.1);
+                    } else {
+                        // Spin dash!
+                        ctx.fillStyle = '#2563eb';
+                        ctx.beginPath();
+                        ctx.arc(0, bh/2 - bw/2, bw/2, 0, Math.PI*2);
+                        ctx.fill();
+                        // Blur effect lines
+                        ctx.strokeStyle = '#60a5fa';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.arc(0, bh/2 - bw/2, bw/2 - 2, 0, Math.PI); ctx.stroke();
+                    }
+                } else if (activeSkin === 'dirt') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    ctx.shadowBlur = 0; // Minecraft has no glow usually
+                    
+                    let sqSize = this.isDucking ? bh*0.5 : bw;
+                    let yOff = -bh/2 + bh*0.5 - (this.isDucking ? bh*0.25 : 0);
+                    
+                    // Base dirt (brown)
+                    ctx.fillStyle = '#5d4037';
+                    ctx.fillRect(-bw/2, yOff, bw, sqSize);
+                    // Grass top (green)
+                    ctx.fillStyle = '#4caf50';
+                    ctx.fillRect(-bw/2, yOff, bw, sqSize * 0.25);
+                    
+                    // Some simple pixel details
+                    ctx.fillStyle = '#4e342e'; // Darker brown
+                    ctx.fillRect(-bw*0.3, yOff + sqSize*0.4, bw*0.2, sqSize*0.15);
+                    ctx.fillRect(bw*0.1, yOff + sqSize*0.7, bw*0.2, sqSize*0.15);
+                    ctx.fillStyle = '#795548'; // Lighter brown
+                    ctx.fillRect(bw*0.2, yOff + sqSize*0.3, bw*0.2, sqSize*0.15);
                 } else {
                     // Draw Default Player Body
                     ctx.shadowBlur = 15;
@@ -1440,6 +1632,8 @@
                 ownsPikachu = true;
                 ownsMario = true;
                 ownsLuigi = true;
+                ownsSonic = true;
+                ownsDirt = true;
 
                 localStorage.setItem('hussValleyHiScore', hiScore);
                 localStorage.setItem('hussValleyOwnsBoxel', 'true');
@@ -1451,6 +1645,8 @@
                 localStorage.setItem('hussValleyOwnsPikachu', 'true');
                 localStorage.setItem('hussValleyOwnsMario', 'true');
                 localStorage.setItem('hussValleyOwnsLuigi', 'true');
+                localStorage.setItem('hussValleyOwnsSonic', 'true');
+                localStorage.setItem('hussValleyOwnsDirt', 'true');
 
                 hiScoreDisplay.innerText = Math.floor(hiScore).toString().padStart(5, '0');
                 updateSkinUI();
@@ -1491,9 +1687,20 @@
         });
 
         // Mobile Controls
-        btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); if(isPlaying) player.jump(); });
-        btnDodge.addEventListener('touchstart', (e) => { e.preventDefault(); if(isPlaying) player.duck(); });
-        btnDodge.addEventListener('touchend', (e) => { e.preventDefault(); if(isPlaying) player.stand(); });
+        btnJump.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            if (isPlaying) player.jump(); 
+        });
+        
+        btnDodge.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            if (isPlaying) player.duck(); 
+        });
+        
+        btnDodge.addEventListener('touchend', (e) => { 
+            e.preventDefault(); 
+            if (isPlaying) player.stand(); 
+        });
 
         startBtn.addEventListener('click', startGame);
         mainMenuBtn.addEventListener('click', showMainMenu);
@@ -1697,7 +1904,6 @@
         init();
         drawEnvironment();
         player.draw();
-
     </script>
 </body>
 </html>
