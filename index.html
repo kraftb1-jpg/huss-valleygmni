@@ -119,6 +119,22 @@
                 display: flex;
             }
         }
+
+        /* Custom Scrollbar for Menus */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
     </style>
 </head>
 <body class="text-gray-200 select-none">
@@ -143,7 +159,7 @@
 
         <!-- Start / Game Over Screens -->
         <div id="menuScreen" class="absolute inset-0 flex items-center justify-center interactive bg-black bg-opacity-80 backdrop-blur-sm z-10 transition-opacity duration-300">
-            <div class="text-center p-8 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <div class="text-center p-6 md:p-8 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[95vh] overflow-y-auto">
                 <h2 id="menuTitle" class="text-4xl font-bold text-red-500 mb-2 font-['Creepster'] tracking-wider">ENTER THE VALLEY</h2>
                 <p id="menuDesc" class="text-gray-400 mb-6 text-sm">Use <strong class="text-white">SPACE / UP</strong> to Jump.<br>Use <strong class="text-white">DOWN</strong> to Dodge.</p>
                 <div id="finalScore" class="hidden mb-6 text-2xl font-mono text-cyan-400 font-bold">Score: 0</div>
