@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Huss Valley</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Jura:wght@400;700&display=swap');
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Jura', sans-serif;
+            touch-action: none; /* Prevent pull-to-refresh on mobile */
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .interactive {
+            pointer-events: auto;
+        }
+
+        /* Glitch effect for title */
+        .glitch {
+            position: relative;
+            color: #d1d5db;
+            font-family: 'Creepster', cursive;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5,5,5,0);
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff003c;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00e6f6;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 31px, 0); }
+            5% { clip: rect(70px, 9999px, 21px, 0); }
+            10% { clip: rect(98px, 9999px, 65px, 0); }
+            15% { clip: rect(15px, 9999px, 98px, 0); }
+            20% { clip: rect(52px, 9999px, 12px, 0); }
+            25% { clip: rect(33px, 9999px, 84px, 0); }
+            30% { clip: rect(89px, 9999px, 45px, 0); }
+            35% { clip: rect(41px, 9999px, 91px, 0); }
+            40% { clip: rect(2px, 9999px, 66px, 0); }
+            45% { clip: rect(77px, 9999px, 19px, 0); }
+            50% { clip: rect(23px, 9999px, 83px, 0); }
+            55% { clip: rect(61px, 9999px, 34px, 0); }
+            60% { clip: rect(94px, 9999px, 7px, 0); }
+            65% { clip: rect(14px, 9999px, 55px, 0); }
+            70% { clip: rect(81px, 9999px, 29px, 0); }
+            75% { clip: rect(48px, 9999px, 92px, 0); }
+            80% { clip: rect(3px, 9999px, 64px, 0); }
+            85% { clip: rect(69px, 9999px, 11px, 0); }
+            90% { clip: rect(27px, 9999px, 88px, 0); }
+            95% { clip: rect(54px, 9999px, 42px, 0); }
+            100% { clip: rect(96px, 9999px, 73px, 0); }
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #1f2937, #111827);
+            border: 1px solid #374151;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, #374151, #1f2937);
+            border-color: #6b7280;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.6), 0 4px 6px -1px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Mobile controls visibility */
+        #mobileControls {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-200 select-none">
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay -->
+    <div class="ui-layer p-4 md:p-8">
+        <!-- Header / Stats -->
+        <div class="flex justify-between items-start w-full">
+            <div>
+                <h1 class="text-3xl md:text-5xl font-bold glitch tracking-widest text-gray-300" data-text="HUSS VALLEY">HUSS VALLEY</h1>
+                <p class="text-gray-500 text-sm md:text-base mt-1">Survive the darkness.</p>
+            </div>
+            <div class="text-right bg-gray-900 bg-opacity-70 p-3 rounded-lg border border-gray-800 shadow-lg">
+                <div class="text-xl md:text-2xl font-bold text-cyan-400 font-mono" id="scoreDisplay">00000</div>
+                <div class="text-xs md:text-sm text-gray-400 font-mono mt-1">HI: <span id="hiScoreDisplay">00000</span></div>
+                <div class="text-xs md:text-sm text-yellow-400 font-mono mt-1">COINS: <span id="coinDisplay">0</span></div>
+            </div>
+        </div>
+
+        <!-- Start / Game Over Screens -->
+        <div id="menuScreen" class="absolute inset-0 flex items-center justify-center interactive bg-black bg-opacity-80 backdrop-blur-sm z-10 transition-opacity duration-300">
+            <div class="text-center p-8 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full mx-4">
+                <h2 id="menuTitle" class="text-4xl font-bold text-red-500 mb-2 font-['Creepster'] tracking-wider">ENTER THE VALLEY</h2>
+                <p id="menuDesc" class="text-gray-400 mb-6 text-sm">Use <strong class="text-white">SPACE / UP</strong> to Jump.<br>Use <strong class="text-white">DOWN</strong> to Dodge.</p>
+                <div id="finalScore" class="hidden mb-6 text-2xl font-mono text-cyan-400 font-bold">Score: 0</div>
+                
+                <div class="mb-6 flex flex-col items-center">
+                    <label for="playerColor" class="text-gray-400 text-sm mb-2 uppercase tracking-wider">Choose Player Color:</label>
+                    <input type="color" id="playerColor" value="#00f0ff" class="w-16 h-16 p-1 bg-gray-800 border border-gray-600 rounded cursor-pointer">
+                </div>
+
+                <div class="mb-8 flex flex-col items-center w-full">
+                    <span class="text-gray-400 text-sm mb-3 uppercase tracking-wider">Select Skin:</span>
+                    <div class="flex flex-wrap gap-2 w-full justify-center">
+                        <!-- Default -->
+                        <button id="btnSkinDefault" class="relative w-20 h-20 border-2 border-cyan-400 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div id="defaultSkinPreview" class="w-6 h-10 bg-[#00f0ff] rounded-sm mb-1"></div>
+                            <span class="text-xs text-gray-300">Default</span>
+                        </button>
+                        <!-- Invisible -->
+                        <button id="btnSkinInvis" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-6 h-10 border-2 border-dashed border-gray-500 mb-1"></div>
+                            <span class="text-xs text-gray-300">Ghost</span>
+                            <div id="invisLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-red-400 mt-1">1000</span>
+                            </div>
+                        </button>
+                        <!-- Sus -->
+                        <button id="btnSkinSus" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="flex items-end mb-1 scale-75 origin-bottom">
+                                <div class="w-2 h-7 bg-red-600 rounded-l-md mr-[1px]"></div>
+                                <div class="w-6 h-10 bg-red-500 rounded-t-full rounded-b-sm relative">
+                                    <div class="absolute top-2 right-[-2px] w-5 h-3 bg-cyan-200 rounded-full border border-gray-800"></div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-300">Sus</span>
+                            <div id="susLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-red-400 mt-1">2000</span>
+                            </div>
+                        </button>
+                        <!-- Chicken -->
+                        <button id="btnSkinChicken" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="flex flex-col items-center mb-1 scale-75 origin-bottom">
+                                <div class="w-4 h-2 bg-red-500 mb-[1px]"></div>
+                                <div class="w-6 h-6 bg-white relative">
+                                    <div class="absolute right-[-4px] top-1 w-3 h-2 bg-orange-500"></div>
+                                </div>
+                                <div class="w-8 h-6 bg-cyan-400 mt-[1px]"></div>
+                            </div>
+                            <span class="text-xs text-gray-300">Chicken</span>
+                            <div id="chickenLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-red-400 mt-1">3000</span>
+                            </div>
+                        </button>
+                        <!-- Dino -->
+                        <button id="btnSkinDino" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="flex flex-col items-start mb-1 scale-50 origin-bottom">
+                                <div class="w-10 h-6 bg-cyan-400 ml-2"></div>
+                                <div class="flex"><div class="w-8 h-8 bg-cyan-400"></div><div class="w-4 h-2 bg-cyan-400 mt-2"></div></div>
+                                <div class="flex gap-2 ml-1"><div class="w-2 h-4 bg-cyan-400"></div><div class="w-2 h-4 bg-cyan-400"></div></div>
+                            </div>
+                            <span class="text-xs text-gray-300">Dino</span>
+                            <div id="dinoLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-red-400 mt-1">4000</span>
+                            </div>
+                        </button>
+                        <!-- Boxel -->
+                        <button id="btnSkinBoxel" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-cyan-400 mb-1 flex items-center justify-center gap-1">
+                                <div class="w-2 h-2 bg-white"></div><div class="w-2 h-2 bg-white"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-300 uppercase">Boxel</span>
+                            <div id="boxelLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Geo -->
+                        <button id="btnSkinGeo" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-cyan-400 mb-1 border-2 border-white flex flex-col items-center justify-center">
+                                <div class="flex gap-1 mb-1"><div class="w-2 h-2 bg-black"></div><div class="w-2 h-2 bg-black"></div></div>
+                                <div class="w-4 h-1 bg-black"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-300 uppercase">Geo Dash</span>
+                            <div id="geoLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Impossible -->
+                        <button id="btnSkinImpossible" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-cyan-400 border-4 border-gray-200 mb-1"></div>
+                            <span class="text-[10px] text-gray-300 uppercase">Impossible</span>
+                            <div id="impossibleLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Pac-Man -->
+                        <button id="btnSkinPacman" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-8 h-8 rounded-full bg-yellow-400 mb-1" style="clip-path: polygon(100% 74%, 44% 48%, 100% 21%, 100% 0, 0 0, 0 100%, 100% 100%);"></div>
+                            <span class="text-[10px] text-gray-300 uppercase">Pac-Man</span>
+                            <div id="pacmanLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Ghost -->
+                        <button id="btnSkinGhost" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-red-500 rounded-t-full relative mb-1">
+                                <div class="absolute top-1 left-1 w-2 h-2 bg-white rounded-full"></div>
+                                <div class="absolute top-1 right-1 w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-300 uppercase">Ghost</span>
+                            <div id="ghostLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Bit.Trip -->
+                        <button id="btnSkinBitTrip" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-6 h-8 bg-black relative border border-gray-500 mb-1"><div class="absolute top-2 w-full h-2 bg-cyan-400"></div></div>
+                            <span class="text-[10px] text-gray-300 uppercase">Bit.Trip</span>
+                            <div id="bitTripLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Pikachu -->
+                        <button id="btnSkinPikachu" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="text-2xl font-bold text-yellow-400 mb-1">P</div>
+                            <span class="text-[10px] text-gray-300 uppercase">Pikachu</span>
+                            <div id="pikachuLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Mario -->
+                        <button id="btnSkinMario" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="text-2xl font-bold text-red-500 mb-1">M</div>
+                            <span class="text-[10px] text-gray-300 uppercase">Mario</span>
+                            <div id="marioLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                        <!-- Luigi -->
+                        <button id="btnSkinLuigi" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="text-2xl font-bold text-green-500 mb-1">L</div>
+                            <span class="text-[10px] text-gray-300 uppercase">Luigi</span>
+                            <div id="luigiLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button id="startBtn" class="btn interactive px-8 py-3 rounded-lg text-lg font-bold text-white w-full uppercase tracking-wider">
+                        Start Run
+                    </button>
+                    <button id="openShopBtn" class="btn interactive px-8 py-2 rounded-lg text-md font-bold text-yellow-500 border border-yellow-600 bg-gray-800 w-full uppercase tracking-wider">
+                        🛒 Shop
+                    </button>
+                    <button id="mainMenuBtn" class="hidden btn interactive px-8 py-3 rounded-lg text-sm font-bold text-gray-400 w-full uppercase tracking-wider" style="background: linear-gradient(45deg, #111827, #000000); border-color: #1f2937;">
+                        Back to Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shopScreen" class="hidden absolute inset-0 items-center justify-center interactive bg-black bg-opacity-90 backdrop-blur-md z-20">
+            <div class="text-center p-8 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-lg w-full mx-4 max-h-screen overflow-y-auto">
+                <h2 class="text-4xl font-bold text-yellow-500 mb-2 font-['Creepster'] tracking-wider">SHOP</h2>
+                <div class="text-xl font-mono text-yellow-400 mb-6 flex justify-between items-center">
+                    <span>Coins: <span id="shopCoinDisplay">0</span></span>
+                    <button id="closeShopBtn" class="text-sm text-gray-400 hover:text-white uppercase font-sans">✖ Close</button>
+                </div>
+                
+                <div class="flex flex-col gap-4 mb-6">
+                    <!-- Impossible Game -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-cyan-400 rounded-sm border-4 border-gray-200"></div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Impossible Game</div>
+                                <div class="text-sm text-gray-400">2,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyImpossible" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Boxel Rebound -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-cyan-400 mb-1 flex items-center justify-center gap-1">
+                                <div class="w-2 h-2 bg-white"></div><div class="w-2 h-2 bg-white"></div>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Boxel Rebound</div>
+                                <div class="text-sm text-gray-400">10,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyBoxel" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Geometry Dash -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-cyan-400 rounded-sm border-2 border-white flex flex-col items-center justify-center shadow-md">
+                                <div class="flex gap-1 mb-1"><div class="w-2 h-2 bg-black"></div><div class="w-2 h-2 bg-black"></div></div>
+                                <div class="w-4 h-1 bg-black"></div>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Geometry Dash</div>
+                                <div class="text-sm text-gray-400">30,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyGeo" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Pacman -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-yellow-400" style="clip-path: polygon(100% 74%, 44% 48%, 100% 21%, 100% 0, 0 0, 0 100%, 100% 100%);"></div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Pac-Man</div>
+                                <div class="text-sm text-gray-400">30,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyPacman" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Pacman Ghost -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-red-500 rounded-t-full relative">
+                                <div class="absolute top-2 left-2 w-2 h-2 bg-white rounded-full"><div class="w-1 h-1 bg-blue-500 rounded-full ml-1 mt-1"></div></div>
+                                <div class="absolute top-2 right-2 w-2 h-2 bg-white rounded-full"><div class="w-1 h-1 bg-blue-500 rounded-full ml-1 mt-1"></div></div>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Pac-Man Ghost</div>
+                                <div class="text-sm text-gray-400">30,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyGhost" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+                    
+                    <!-- Pikachu -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="text-3xl font-bold text-yellow-400">P</div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Pixel Pikachu</div>
+                                <div class="text-sm text-gray-400">50,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyPikachu" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Bit Trip -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-10 bg-black relative border border-gray-500"><div class="absolute top-2 left-0 w-full h-2 bg-cyan-400"></div></div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Bit.Trip Runner</div>
+                                <div class="text-sm text-gray-400">60,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyBitTrip" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Mario -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="text-3xl font-bold text-red-500">M</div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Pixel Mario</div>
+                                <div class="text-sm text-gray-400">100,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyMario" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Luigi -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="text-3xl font-bold text-green-500">L</div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Pixel Luigi</div>
+                                <div class="text-sm text-gray-400">100,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyLuigi" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Controls (Visible only on small screens) -->
+        <div id="mobileControls" class="w-full flex justify-between px-4 pb-4 mt-auto interactive opacity-50 z-0 gap-4">
+            <button id="btnDodge" class="flex-1 bg-gray-800 border-2 border-gray-600 rounded-xl h-20 active:bg-gray-700 flex justify-center items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+            </button>
+            <button id="btnJump" class="flex-1 bg-gray-800 border-2 border-gray-600 rounded-xl h-20 active:bg-gray-700 flex justify-center items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Setup & State ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI Elements
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const hiScoreDisplay = document.getElementById('hiScoreDisplay');
+        const coinDisplay = document.getElementById('coinDisplay');
+        const menuScreen = document.getElementById('menuScreen');
+        const menuTitle = document.getElementById('menuTitle');
+        const menuDesc = document.getElementById('menuDesc');
+        const startBtn = document.getElementById('startBtn');
+        const openShopBtn = document.getElementById('openShopBtn');
+        const mainMenuBtn = document.getElementById('mainMenuBtn');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const playerColorInput = document.getElementById('playerColor');
+        const btnJump = document.getElementById('btnJump');
+        const btnDodge = document.getElementById('btnDodge');
+
+        const btnSkinDefault = document.getElementById('btnSkinDefault');
+        const btnSkinInvis = document.getElementById('btnSkinInvis');
+        const btnSkinSus = document.getElementById('btnSkinSus');
+        const btnSkinChicken = document.getElementById('btnSkinChicken');
+        const btnSkinDino = document.getElementById('btnSkinDino');
+        const btnSkinBoxel = document.getElementById('btnSkinBoxel');
+        const btnSkinGeo = document.getElementById('btnSkinGeo');
+        const btnSkinImpossible = document.getElementById('btnSkinImpossible');
+        const btnSkinPacman = document.getElementById('btnSkinPacman');
+        const btnSkinGhost = document.getElementById('btnSkinGhost');
+        const btnSkinBitTrip = document.getElementById('btnSkinBitTrip');
+        const btnSkinPikachu = document.getElementById('btnSkinPikachu');
+        const btnSkinMario = document.getElementById('btnSkinMario');
+        const btnSkinLuigi = document.getElementById('btnSkinLuigi');
+        
+        const invisLock = document.getElementById('invisLock');
+        const susLock = document.getElementById('susLock');
+        const chickenLock = document.getElementById('chickenLock');
+        const dinoLock = document.getElementById('dinoLock');
+        const boxelLock = document.getElementById('boxelLock');
+        const geoLock = document.getElementById('geoLock');
+        const impossibleLock = document.getElementById('impossibleLock');
+        const pacmanLock = document.getElementById('pacmanLock');
+        const ghostLock = document.getElementById('ghostLock');
+        const bitTripLock = document.getElementById('bitTripLock');
+        const pikachuLock = document.getElementById('pikachuLock');
+        const marioLock = document.getElementById('marioLock');
+        const luigiLock = document.getElementById('luigiLock');
+        const defaultSkinPreview = document.getElementById('defaultSkinPreview');
+        
+        // Shop UI
+        const shopScreen = document.getElementById('shopScreen');
+        const shopCoinDisplay = document.getElementById('shopCoinDisplay');
+        const btnBuyBoxel = document.getElementById('btnBuyBoxel');
+        const btnBuyGeo = document.getElementById('btnBuyGeo');
+        const btnBuyImpossible = document.getElementById('btnBuyImpossible');
+        const btnBuyBitTrip = document.getElementById('btnBuyBitTrip');
+        const btnBuyPacman = document.getElementById('btnBuyPacman');
+        const btnBuyGhost = document.getElementById('btnBuyGhost');
+        const btnBuyPikachu = document.getElementById('btnBuyPikachu');
+        const btnBuyMario = document.getElementById('btnBuyMario');
+        const btnBuyLuigi = document.getElementById('btnBuyLuigi');
+        const closeShopBtn = document.getElementById('closeShopBtn');
+
+        let activeSkin = localStorage.getItem('hussValleySkin') || 'default';
+        let coins = parseInt(localStorage.getItem('hussValleyCoins')) || 0;
+        let ownsBoxel = localStorage.getItem('hussValleyOwnsBoxel') === 'true';
+        let ownsGeo = localStorage.getItem('hussValleyOwnsGeo') === 'true';
+        let ownsImpossible = localStorage.getItem('hussValleyOwnsImpossible') === 'true';
+        let ownsBitTrip = localStorage.getItem('hussValleyOwnsBitTrip') === 'true';
+        let ownsPacman = localStorage.getItem('hussValleyOwnsPacman') === 'true';
+        let ownsGhost = localStorage.getItem('hussValleyOwnsGhost') === 'true';
+        let ownsPikachu = localStorage.getItem('hussValleyOwnsPikachu') === 'true';
+        let ownsMario = localStorage.getItem('hussValleyOwnsMario') === 'true';
+        let ownsLuigi = localStorage.getItem('hussValleyOwnsLuigi') === 'true';
+
+        // Core Variables
+        let gameSpeed = 0;
+        const initialSpeed = 6;
+        const speedIncrement = 0.005; // Increased to make the game ramp up faster
+        const maxSpeed = 25; // Increased maximum speed for higher difficulty
+        
+        let score = 0;
+        let hiScore = localStorage.getItem('hussValleyHiScore') || 0;
+        let isPlaying = false;
+        let animationId;
+        let groundHeight = 100;
+
+        // Display initial high score
+        hiScoreDisplay.innerText = Math.floor(hiScore).toString().padStart(5, '0');
+        coinDisplay.innerText = coins.toLocaleString();
+
+        function updateSkinUI() {
+            // Invisible Skin Check
+            if (hiScore >= 1000) {
+                invisLock.classList.add('hidden');
+            } else {
+                invisLock.classList.remove('hidden');
+                if (activeSkin === 'invisible') {
+                    activeSkin = 'default';
+                }
+            }
+
+            // Sus Skin Check
+            if (hiScore >= 2000) {
+                susLock.classList.add('hidden');
+            } else {
+                susLock.classList.remove('hidden');
+                if (activeSkin === 'sus') {
+                    activeSkin = 'default';
+                }
+            }
+
+            // Chicken Skin Check
+            if (hiScore >= 3000) {
+                chickenLock.classList.add('hidden');
+            } else {
+                chickenLock.classList.remove('hidden');
+                if (activeSkin === 'chicken') {
+                    activeSkin = 'default';
+                }
+            }
+
+            // Dino Skin Check
+            if (hiScore >= 4000) {
+                dinoLock.classList.add('hidden');
+            } else {
+                dinoLock.classList.remove('hidden');
+                if (activeSkin === 'dino') {
+                    activeSkin = 'default';
+                }
+            }
+
+            // Boxel Check
+            if (ownsBoxel) {
+                boxelLock.classList.add('hidden');
+            } else {
+                boxelLock.classList.remove('hidden');
+                if (activeSkin === 'boxel') {
+                    activeSkin = 'default';
+                }
+            }
+
+            // Geo Check
+            if (ownsGeo) {
+                geoLock.classList.add('hidden');
+            } else {
+                geoLock.classList.remove('hidden');
+                if (activeSkin === 'geo') {
+                    activeSkin = 'default';
+                }
+            }
+            
+            // Other Shop Skin Checks
+            if (ownsImpossible) { impossibleLock.classList.add('hidden'); } else { impossibleLock.classList.remove('hidden'); if (activeSkin === 'impossible') activeSkin = 'default'; }
+            if (ownsPacman) { pacmanLock.classList.add('hidden'); } else { pacmanLock.classList.remove('hidden'); if (activeSkin === 'pacman') activeSkin = 'default'; }
+            if (ownsGhost) { ghostLock.classList.add('hidden'); } else { ghostLock.classList.remove('hidden'); if (activeSkin === 'ghost') activeSkin = 'default'; }
+            if (ownsBitTrip) { bitTripLock.classList.add('hidden'); } else { bitTripLock.classList.remove('hidden'); if (activeSkin === 'bittrip') activeSkin = 'default'; }
+            if (ownsPikachu) { pikachuLock.classList.add('hidden'); } else { pikachuLock.classList.remove('hidden'); if (activeSkin === 'pikachu') activeSkin = 'default'; }
+            if (ownsMario) { marioLock.classList.add('hidden'); } else { marioLock.classList.remove('hidden'); if (activeSkin === 'mario') activeSkin = 'default'; }
+            if (ownsLuigi) { luigiLock.classList.add('hidden'); } else { luigiLock.classList.remove('hidden'); if (activeSkin === 'luigi') activeSkin = 'default'; }
+
+            localStorage.setItem('hussValleySkin', activeSkin);
+
+            // Highlight selected skin
+            [btnSkinDefault, btnSkinInvis, btnSkinSus, btnSkinChicken, btnSkinDino, btnSkinBoxel, btnSkinGeo, btnSkinImpossible, btnSkinPacman, btnSkinGhost, btnSkinBitTrip, btnSkinPikachu, btnSkinMario, btnSkinLuigi].forEach(btn => btn.classList.replace('border-cyan-400', 'border-gray-600'));
+            
+            if (activeSkin === 'default') {
+                btnSkinDefault.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'invisible') {
+                btnSkinInvis.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'sus') {
+                btnSkinSus.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'chicken') {
+                btnSkinChicken.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'dino') {
+                btnSkinDino.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'boxel') {
+                btnSkinBoxel.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'geo') {
+                btnSkinGeo.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'impossible') {
+                btnSkinImpossible.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'pacman') {
+                btnSkinPacman.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'ghost') {
+                btnSkinGhost.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'bittrip') {
+                btnSkinBitTrip.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'pikachu') {
+                btnSkinPikachu.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'mario') {
+                btnSkinMario.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'luigi') {
+                btnSkinLuigi.classList.replace('border-gray-600', 'border-cyan-400');
+            }
+        }
+
+        function updateShopUI() {
+            shopCoinDisplay.innerText = coins.toLocaleString();
+            coinDisplay.innerText = coins.toLocaleString();
+            
+            const shopUpdates = [
+                { owns: ownsBoxel, btn: btnBuyBoxel, price: 10000 },
+                { owns: ownsGeo, btn: btnBuyGeo, price: 30000 },
+                { owns: ownsImpossible, btn: btnBuyImpossible, price: 2000 },
+                { owns: ownsBitTrip, btn: btnBuyBitTrip, price: 60000 },
+                { owns: ownsPacman, btn: btnBuyPacman, price: 30000 },
+                { owns: ownsGhost, btn: btnBuyGhost, price: 30000 },
+                { owns: ownsPikachu, btn: btnBuyPikachu, price: 50000 },
+                { owns: ownsMario, btn: btnBuyMario, price: 100000 },
+                { owns: ownsLuigi, btn: btnBuyLuigi, price: 100000 },
+            ];
+
+            shopUpdates.forEach(item => {
+                if (item.owns) {
+                    item.btn.innerText = 'Owned';
+                    item.btn.classList.replace('bg-yellow-600', 'bg-gray-600');
+                    item.btn.disabled = true;
+                } else {
+                    item.btn.innerText = 'Buy';
+                    item.btn.disabled = coins < item.price;
+                    item.btn.classList.toggle('opacity-50', coins < item.price);
+                    item.btn.classList.toggle('bg-yellow-600', true);
+                    item.btn.classList.toggle('bg-gray-600', false);
+                }
+            });
+        }
+
+        btnSkinDefault.addEventListener('click', () => {
+            activeSkin = 'default';
+            updateSkinUI();
+        });
+
+        btnSkinInvis.addEventListener('click', () => {
+            if (hiScore >= 1000) {
+                activeSkin = 'invisible';
+                updateSkinUI();
+            }
+        });
+
+        btnSkinSus.addEventListener('click', () => {
+            if (hiScore >= 2000) {
+                activeSkin = 'sus';
+                updateSkinUI();
+            }
+        });
+
+        btnSkinChicken.addEventListener('click', () => {
+            if (hiScore >= 3000) {
+                activeSkin = 'chicken';
+                updateSkinUI();
+            }
+        });
+
+        btnSkinDino.addEventListener('click', () => {
+            if (hiScore >= 4000) {
+                activeSkin = 'dino';
+                updateSkinUI();
+            }
+        });
+
+        btnSkinBoxel.addEventListener('click', () => {
+            if (ownsBoxel) {
+                activeSkin = 'boxel';
+                updateSkinUI();
+            }
+        });
+
+        btnSkinGeo.addEventListener('click', () => {
+            if (ownsGeo) {
+                activeSkin = 'geo';
+                updateSkinUI();
+            }
+        });
+
+        btnSkinImpossible.addEventListener('click', () => { if (ownsImpossible) { activeSkin = 'impossible'; updateSkinUI(); } });
+        btnSkinPacman.addEventListener('click', () => { if (ownsPacman) { activeSkin = 'pacman'; updateSkinUI(); } });
+        btnSkinGhost.addEventListener('click', () => { if (ownsGhost) { activeSkin = 'ghost'; updateSkinUI(); } });
+        btnSkinBitTrip.addEventListener('click', () => { if (ownsBitTrip) { activeSkin = 'bittrip'; updateSkinUI(); } });
+        btnSkinPikachu.addEventListener('click', () => { if (ownsPikachu) { activeSkin = 'pikachu'; updateSkinUI(); } });
+        btnSkinMario.addEventListener('click', () => { if (ownsMario) { activeSkin = 'mario'; updateSkinUI(); } });
+        btnSkinLuigi.addEventListener('click', () => { if (ownsLuigi) { activeSkin = 'luigi'; updateSkinUI(); } });
+
+        // Shop Interactions
+        openShopBtn.addEventListener('click', () => {
+            updateShopUI();
+            shopScreen.classList.remove('hidden');
+            shopScreen.classList.add('flex');
+        });
+
+        closeShopBtn.addEventListener('click', () => {
+            shopScreen.classList.add('hidden');
+            shopScreen.classList.remove('flex');
+            updateSkinUI();
+        });
+
+        function setupBuyButton(btn, price, ownsKey, setOwnsCallback) {
+            btn.addEventListener('click', () => {
+                if (coins >= price && !localStorage.getItem(ownsKey)) {
+                    coins -= price;
+                    setOwnsCallback();
+                    localStorage.setItem('hussValleyCoins', coins);
+                    localStorage.setItem(ownsKey, 'true');
+                    updateShopUI();
+                    updateSkinUI();
+                }
+            });
+        }
+
+        setupBuyButton(btnBuyBoxel, 10000, 'hussValleyOwnsBoxel', () => ownsBoxel = true);
+        setupBuyButton(btnBuyGeo, 30000, 'hussValleyOwnsGeo', () => ownsGeo = true);
+        setupBuyButton(btnBuyImpossible, 2000, 'hussValleyOwnsImpossible', () => ownsImpossible = true);
+        setupBuyButton(btnBuyBitTrip, 60000, 'hussValleyOwnsBitTrip', () => ownsBitTrip = true);
+        setupBuyButton(btnBuyPacman, 30000, 'hussValleyOwnsPacman', () => ownsPacman = true);
+        setupBuyButton(btnBuyGhost, 30000, 'hussValleyOwnsGhost', () => ownsGhost = true);
+        setupBuyButton(btnBuyPikachu, 50000, 'hussValleyOwnsPikachu', () => ownsPikachu = true);
+        setupBuyButton(btnBuyMario, 100000, 'hussValleyOwnsMario', () => ownsMario = true);
+        setupBuyButton(btnBuyLuigi, 100000, 'hussValleyOwnsLuigi', () => ownsLuigi = true);
+
+        // Resize Canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            groundHeight = Math.max(80, canvas.height * 0.15); // Dynamic ground height
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- Game Objects ---
+        
+        // Colors / Aesthetics
+        const theme = {
+            bgTop: '#05070a',
+            bgBottom: '#1a1025',
+            ground: '#0d0d14',
+            groundLine: '#301b4d',
+            player: '#00f0ff',
+            playerGlow: 'rgba(0, 240, 255, 0.5)',
+            playerRGB: { r: 0, g: 240, b: 255 },
+            obstacle: '#ff0055',
+            obstacleGlow: 'rgba(255, 0, 85, 0.5)',
+            mountainNear: '#110b1a',
+            mountainFar: '#0a0612'
+        };
+
+        // Player Entity
+        class Player {
+            constructor() {
+                this.originalWidth = 40;
+                this.originalHeight = 80;
+                this.width = this.originalWidth;
+                this.height = this.originalHeight;
+                this.x = 80;
+                this.y = canvas.height - groundHeight - this.height;
+                this.dy = 0;
+                this.jumpForce = 16;
+                this.gravity = 0.8;
+                this.grounded = true;
+                this.isDucking = false;
+                this.particles = [];
+            }
+
+            jump() {
+                if (this.grounded) {
+                    this.dy = -this.jumpForce;
+                    this.grounded = false;
+                    this.isDucking = false;
+                    this.height = this.originalHeight;
+                    this.createDust();
+                }
+            }
+
+            duck() {
+                if (this.grounded && !this.isDucking) {
+                    this.isDucking = true;
+                    this.height = this.originalHeight / 2;
+                    // Keep at ground level
+                    this.y = canvas.height - groundHeight - this.height;
+                }
+            }
+
+            stand() {
+                if (this.isDucking) {
+                    this.isDucking = false;
+                    this.height = this.originalHeight;
+                    this.y = canvas.height - groundHeight - this.height;
+                }
+            }
+
+            update() {
+                // Apply gravity
+                if (!this.grounded) {
+                    this.dy += this.gravity;
+                    this.y += this.dy;
+                }
+
+                // Ground collision
+                const floor = canvas.height - groundHeight - this.height;
+                if (this.y >= floor) {
+                    this.y = floor;
+                    this.grounded = true;
+                    this.dy = 0;
+                }
+
+                // Trail particles
+                if (gameSpeed > 0 && Math.random() < 0.3) {
+                    this.particles.push({
+                        x: this.x,
+                        y: this.y + this.height - (this.isDucking ? 10 : 20) + Math.random() * 20,
+                        size: Math.random() * 4 + 2,
+                        life: 1,
+                        vx: -gameSpeed * 0.5 + (Math.random() - 0.5)
+                    });
+                }
+            }
+
+            draw() {
+                // Draw particles
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    let p = this.particles[i];
+                    p.x += p.vx;
+                    p.life -= 0.05;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+                    ctx.fillStyle = `rgba(${theme.playerRGB.r}, ${theme.playerRGB.g}, ${theme.playerRGB.b}, ${p.life * 0.5})`;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                }
+
+                if (activeSkin === 'invisible') {
+                    // Do not draw the player body for the invisible skin
+                    return;
+                }
+
+                ctx.save();
+                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                
+                if (this.grounded && !this.isDucking && gameSpeed > 0) {
+                    ctx.rotate(0.1); // Lean forward
+                }
+
+                if (activeSkin === 'sus') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = theme.playerGlow;
+                    
+                    // Backpack
+                    ctx.fillStyle = theme.player;
+                    ctx.fillRect(-bw*0.6, -bh*0.2, bw*0.3, bh*0.5);
+                    
+                    // Main Body
+                    ctx.beginPath();
+                    ctx.arc(0, -bh/2 + bw/2, bw/2, Math.PI, 0); // Top head dome
+                    ctx.lineTo(bw/2, bh/2 - bh*0.2); // Right side body
+                    
+                    if (!this.isDucking) {
+                        // Right leg
+                        ctx.lineTo(bw/2, bh/2); 
+                        ctx.lineTo(bw*0.1, bh/2);
+                        ctx.lineTo(bw*0.1, bh/2 - bh*0.2); // Inner right leg
+                        
+                        // Crotch
+                        ctx.lineTo(-bw*0.1, bh/2 - bh*0.2);
+                        
+                        // Left leg
+                        ctx.lineTo(-bw*0.1, bh/2);
+                        ctx.lineTo(-bw/2, bh/2);
+                        ctx.lineTo(-bw/2, bh/2 - bh*0.2); // Outer left leg
+                    } else {
+                        // Flat bottom when ducking
+                        ctx.lineTo(bw/2, bh/2);
+                        ctx.lineTo(-bw/2, bh/2);
+                    }
+                    
+                    ctx.lineTo(-bw/2, -bh/2 + bw/2); // Left side body up to head
+                    ctx.fill();
+                    
+                    // Visor Base
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#99d9ea';
+                    ctx.beginPath();
+                    ctx.ellipse(bw*0.2, -bh*0.1, bw*0.35, bh*0.15, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    // Visor Outline
+                    ctx.strokeStyle = '#111';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Visor Highlight
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.ellipse(bw*0.3, -bh*0.15, bw*0.15, bh*0.05, 0.2, 0, Math.PI*2);
+                    ctx.fill();
+
+                } else if (activeSkin === 'chicken') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = theme.playerGlow;
+
+                    if (!this.isDucking) {
+                        // Legs
+                        ctx.fillStyle = '#f97316'; // orange
+                        ctx.fillRect(-bw*0.2, bh/2 - bh*0.2, bw*0.1, bh*0.2); // Left leg
+                        ctx.fillRect(bw*0.1, bh/2 - bh*0.2, bw*0.1, bh*0.2); // Right leg
+                        // Feet
+                        ctx.fillRect(-bw*0.2, bh/2 - bh*0.05, bw*0.25, bh*0.05); 
+                        ctx.fillRect(bw*0.1, bh/2 - bh*0.05, bw*0.25, bh*0.05);
+
+                        // Body (Vest uses player chosen color)
+                        ctx.fillStyle = theme.player;
+                        ctx.fillRect(-bw/2, -bh*0.1, bw, bh*0.5);
+                        
+                        // Wing
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(-bw*0.4, 0, bw*0.4, bh*0.3);
+                        
+                        // Head
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(-bw*0.4, -bh/2, bw*0.8, bh*0.4);
+                        
+                        // Eye
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(bw*0.1, -bh*0.4, bw*0.1, bh*0.1);
+                        
+                        // Beak
+                        ctx.fillStyle = '#f97316'; // orange
+                        ctx.fillRect(bw*0.4, -bh*0.3, bw*0.3, bh*0.15);
+                        
+                        // Comb (Top red part)
+                        ctx.fillStyle = '#ef4444'; // red
+                        ctx.fillRect(-bw*0.2, -bh/2 - bh*0.1, bw*0.4, bh*0.1);
+                        
+                        // Wattle (Bottom red part)
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(bw*0.3, -bh*0.15, bw*0.2, bh*0.15);
+                    } else {
+                        // Ducking version (squashed)
+                        // Feet
+                        ctx.fillStyle = '#f97316';
+                        ctx.fillRect(-bw*0.2, bh/2 - bh*0.1, bw*0.2, bh*0.1);
+                        ctx.fillRect(bw*0.1, bh/2 - bh*0.1, bw*0.2, bh*0.1);
+
+                        // Body/Vest
+                        ctx.fillStyle = theme.player;
+                        ctx.fillRect(-bw/2, -bh/2 + bh*0.2, bw, bh*0.7);
+                        
+                        // Head
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(-bw*0.4, -bh/2, bw*0.8, bh*0.4);
+                        
+                        // Eye
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(bw*0.1, -bh*0.4, bw*0.1, bh*0.1);
+                        
+                        // Beak
+                        ctx.fillStyle = '#f97316'; 
+                        ctx.fillRect(bw*0.4, -bh*0.3, bw*0.3, bh*0.15);
+                    }
+                } else if (activeSkin === 'dino') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = theme.playerGlow;
+                    ctx.fillStyle = theme.player; 
+
+                    if (!this.isDucking) {
+                        // main body
+                        ctx.fillRect(-bw/2, -bh/2 + bh*0.2, bw*0.6, bh*0.6);
+                        // tail
+                        ctx.fillRect(-bw/2 - bw*0.2, 0, bw*0.2, bh*0.3);
+                        // head
+                        ctx.fillRect(-bw*0.1, -bh/2, bw*0.7, bh*0.4);
+                        // snout
+                        ctx.fillRect(bw*0.2, -bh/2 + bh*0.1, bw*0.4, bh*0.2);
+                        // little arms
+                        ctx.fillRect(bw*0.1, -bh/2 + bh*0.4, bw*0.3, bh*0.08);
+                        
+                        // eye (transparent hole effect)
+                        ctx.fillStyle = theme.bgTop; 
+                        ctx.fillRect(bw*0.2, -bh/2 + bh*0.05, bw*0.1, bw*0.1);
+                        
+                        // legs
+                        ctx.fillStyle = theme.player;
+                        ctx.fillRect(-bw*0.3, bh/2 - bh*0.2, bw*0.15, bh*0.2);
+                        ctx.fillRect(bw*0.1, bh/2 - bh*0.2, bw*0.15, bh*0.2);
+                    } else {
+                        // ducking dino (long and short)
+                        ctx.fillRect(-bw, -bh/2 + bh*0.5, bw*1.5, bh*0.4);
+                        // head lower
+                        ctx.fillRect(bw*0.3, -bh/2 + bh*0.4, bw*0.7, bh*0.3);
+                        // snout
+                        ctx.fillRect(bw*0.5, -bh/2 + bh*0.5, bw*0.5, bh*0.2);
+                        // eye
+                        ctx.fillStyle = theme.bgTop;
+                        ctx.fillRect(bw*0.6, -bh/2 + bh*0.45, bw*0.1, bw*0.1);
+                        // legs short
+                        ctx.fillStyle = theme.player;
+                        ctx.fillRect(-bw*0.5, bh/2 - bh*0.1, bw*0.15, bh*0.1);
+                        ctx.fillRect(0, bh/2 - bh*0.1, bw*0.15, bh*0.1);
+                    }
+                } else if (activeSkin === 'boxel') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = theme.playerGlow;
+                    ctx.fillStyle = theme.player;
+                    
+                    // Boxel is typically a square
+                    let sqSize = this.isDucking ? bh*0.5 : bw;
+                    let yOff = -bh/2 + bh*0.5 - (this.isDucking ? bh*0.25 : 0);
+                    
+                    ctx.fillRect(-bw/2, yOff, bw, sqSize);
+                    
+                    // Inner details (eyes)
+                    ctx.fillStyle = '#fff';
+                    ctx.shadowBlur = 0;
+                    let eyeY = yOff + sqSize * 0.3;
+                    ctx.fillRect(-bw*0.2, eyeY, bw*0.2, bw*0.2);
+                    ctx.fillRect(bw*0.1, eyeY, bw*0.2, bw*0.2);
+                } else if (activeSkin === 'geo') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = theme.playerGlow;
+                    
+                    let sqSize = this.isDucking ? bh*0.5 : bw;
+                    let yOff = -bh/2 + bh*0.5 - (this.isDucking ? bh*0.25 : 0);
+                    
+                    // Base color
+                    ctx.fillStyle = theme.player;
+                    ctx.fillRect(-bw/2, yOff, bw, sqSize);
+                    
+                    // Border
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-bw/2, yOff, bw, sqSize);
+                    
+                    // Face
+                    ctx.fillStyle = '#000'; 
+                    // Eyes (angry tilt)
+                    ctx.beginPath();
+                    ctx.moveTo(-bw*0.3, yOff + sqSize*0.2); // top left outer
+                    ctx.lineTo(-bw*0.1, yOff + sqSize*0.3); // top left inner
+                    ctx.lineTo(-bw*0.1, yOff + sqSize*0.5); // bot left inner
+                    ctx.lineTo(-bw*0.3, yOff + sqSize*0.5); // bot left outer
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(bw*0.3, yOff + sqSize*0.2); // top right outer
+                    ctx.lineTo(bw*0.1, yOff + sqSize*0.3); // top right inner
+                    ctx.lineTo(bw*0.1, yOff + sqSize*0.5); // bot right inner
+                    ctx.lineTo(bw*0.3, yOff + sqSize*0.5); // bot right outer
+                    ctx.fill();
+                    
+                    // Mouth
+                    ctx.fillRect(-bw*0.2, yOff + sqSize*0.7, bw*0.4, sqSize*0.1);
+                } else if (activeSkin === 'impossible') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = theme.playerGlow;
+                    
+                    ctx.fillStyle = theme.player;
+                    ctx.fillRect(-bw/2, -bh/2, bw, bh);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(-bw/2 + 2, -bh/2 + 2, bw - 4, bh - 4);
+                } else if (activeSkin === 'pacman') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(250, 204, 21, 0.5)';
+                    ctx.fillStyle = '#facc15';
+                    
+                    // Chomping animation based on movement
+                    let chomp = Math.abs(Math.sin(this.x * 0.1)) * 0.25;
+                    let radius = bh/2;
+                    
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius, (0.1 + chomp) * Math.PI, (1.9 - chomp) * Math.PI);
+                    ctx.lineTo(0, 0);
+                    ctx.fill();
+                } else if (activeSkin === 'ghost') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(239, 68, 68, 0.5)';
+                    ctx.fillStyle = '#ef4444';
+                    
+                    ctx.beginPath();
+                    ctx.arc(0, -bh/2 + bw/2, bw/2, Math.PI, 0); // Head dome
+                    ctx.lineTo(bw/2, bh/2);
+                    
+                    if (!this.isDucking) {
+                        ctx.lineTo(bw*0.25, bh/2 - 5);
+                        ctx.lineTo(0, bh/2);
+                        ctx.lineTo(-bw*0.25, bh/2 - 5);
+                    }
+                    ctx.lineTo(-bw/2, bh/2);
+                    ctx.fill();
+                    
+                    // Eyes
+                    ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
+                    ctx.beginPath(); ctx.arc(-bw*0.15, -bh/4, 6, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(bw*0.15, -bh/4, 6, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#3b82f6';
+                    ctx.beginPath(); ctx.arc(-bw*0.15 + 2, -bh/4 + 2, 3, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(bw*0.15 + 2, -bh/4 + 2, 3, 0, Math.PI*2); ctx.fill();
+                } else if (activeSkin === 'bittrip') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = theme.playerGlow;
+                    
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(-bw/2, -bh/2, bw, bh);
+                    
+                    ctx.fillStyle = theme.player; // Neon stripe matches chosen color
+                    ctx.fillRect(-bw/2, -bh/4, bw, bh*0.2);
+                } else if (activeSkin === 'pikachu') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    
+                    ctx.fillStyle = '#facc15';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(250, 204, 21, 0.5)';
+                    
+                    if (!this.isDucking) {
+                        ctx.fillRect(-bw/2, -bh/2 + 20, bw, bh - 20); // body
+                        // Ears
+                        ctx.beginPath(); ctx.moveTo(-bw/2, -bh/2 + 20); ctx.lineTo(-bw*0.8, -bh/2 - 10); ctx.lineTo(-bw*0.2, -bh/2 + 20); ctx.fill();
+                        ctx.beginPath(); ctx.moveTo(bw/2, -bh/2 + 20); ctx.lineTo(bw*0.8, -bh/2 - 10); ctx.lineTo(bw*0.2, -bh/2 + 20); ctx.fill();
+                        
+                        ctx.fillStyle = '#000'; ctx.shadowBlur = 0;
+                        ctx.beginPath(); ctx.moveTo(-bw*0.8, -bh/2 - 10); ctx.lineTo(-bw*0.6, -bh/2 + 5); ctx.lineTo(-bw*0.5, -bh/2 - 5); ctx.fill(); 
+                        ctx.beginPath(); ctx.moveTo(bw*0.8, -bh/2 - 10); ctx.lineTo(bw*0.6, -bh/2 + 5); ctx.lineTo(bw*0.5, -bh/2 - 5); ctx.fill();
+                        
+                        ctx.fillRect(bw*0.1, -bh/4 + 5, 5, 5); // eye
+                        ctx.fillStyle = '#ef4444'; // cheek
+                        ctx.fillRect(bw*0.2, -bh/4 + 15, 10, 10);
+                    } else {
+                        ctx.fillRect(-bw, -bh/2, bw*2, bh); // Ducking block
+                        ctx.fillStyle = '#ef4444'; ctx.shadowBlur = 0;
+                        ctx.fillRect(bw*0.5, -bh/2 + 10, 10, 10);
+                    }
+                } else if (activeSkin === 'mario' || activeSkin === 'luigi') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    const isMario = activeSkin === 'mario';
+                    
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = isMario ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)';
+                    
+                    if (!this.isDucking) {
+                        ctx.fillStyle = isMario ? '#ef4444' : '#22c55e';
+                        ctx.fillRect(-bw/2, -bh/2, bw, bh*0.4); // Hat/Shirt
+                        
+                        ctx.fillStyle = '#fca5a5';
+                        ctx.fillRect(-bw/2, -bh/2 + bh*0.2, bw*0.8, bh*0.3); // Face
+                        
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(bw*0.1, -bh/2 + bh*0.25, 4, 8); // Eye
+                        ctx.fillRect(0, -bh/2 + bh*0.4, bw*0.6, 6); // Mustache
+                        
+                        ctx.fillStyle = isMario ? '#3b82f6' : '#1d4ed8'; // Overalls
+                        ctx.fillRect(-bw/2, -bh/2 + bh*0.5, bw, bh*0.5); 
+                    } else {
+                        ctx.fillStyle = isMario ? '#ef4444' : '#22c55e';
+                        ctx.fillRect(-bw/2, -bh/2, bw, bh*0.5);
+                        ctx.fillStyle = isMario ? '#3b82f6' : '#1d4ed8';
+                        ctx.fillRect(-bw/2, 0, bw, bh*0.5);
+                    }
+                } else {
+                    // Draw Default Player Body
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = theme.playerGlow;
+                    ctx.fillStyle = theme.player;
+                    
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    
+                    // Add an "eye" or visor
+                    ctx.fillStyle = '#fff';
+                    ctx.shadowBlur = 0;
+                    if (this.isDucking) {
+                        ctx.fillRect(this.width/2 - 15, -this.height/2 + 5, 10, 4);
+                    } else {
+                        ctx.fillRect(this.width/2 - 10, -this.height/2 + 15, 8, 8);
+                    }
+                }
+
+                ctx.restore();
+                ctx.shadowBlur = 0; // Reset
+            }
+
+            createDust() {
+                for (let i = 0; i < 10; i++) {
+                    this.particles.push({
+                        x: this.x + Math.random() * this.width,
+                        y: canvas.height - groundHeight,
+                        size: Math.random() * 5 + 3,
+                        life: 1,
+                        vx: (Math.random() - 0.5) * 4 - gameSpeed*0.2
+                    });
+                }
+            }
+        }
+
+        // Obstacles
+        class Obstacle {
+            constructor() {
+                this.x = canvas.width;
+                
+                // 30% chance for a flying obstacle (requires ducking), 70% for ground obstacle
+                const isFlying = Math.random() < 0.3;
+                
+                if (isFlying) {
+                    this.width = 40;
+                    this.height = 40;
+                    this.y = canvas.height - groundHeight - 70; // High enough to duck under, hard to jump over
+                    this.type = 'fly';
+                } else {
+                    // Ground obstacle (spike or block)
+                    this.width = 30 + Math.random() * 30; // 30 to 60 width
+                    this.height = 40 + Math.random() * 40; // 40 to 80 height
+                    this.y = canvas.height - groundHeight - this.height;
+                    this.type = 'ground';
+                }
+                
+                this.markedForDeletion = false;
+            }
+
+            update() {
+                this.x -= gameSpeed;
+                if (this.x + this.width < 0) {
+                    this.markedForDeletion = true;
+                }
+            }
+
+            draw() {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = theme.obstacleGlow;
+                ctx.fillStyle = theme.obstacle;
+
+                if (this.type === 'fly') {
+                    // Draw hovering drone/blade
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y + this.height/2);
+                    ctx.lineTo(this.x + this.width/2, this.y);
+                    ctx.lineTo(this.x + this.width, this.y + this.height/2);
+                    ctx.lineTo(this.x + this.width/2, this.y + this.height);
+                    ctx.fill();
+                    
+                    // Core
+                    ctx.fillStyle = '#fff';
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width/2, this.y + this.height/2, 5, 0, Math.PI*2);
+                    ctx.fill();
+
+                } else {
+                    // Draw jagged crystal/spike
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y + this.height);
+                    ctx.lineTo(this.x + this.width/2, this.y);
+                    ctx.lineTo(this.x + this.width, this.y + this.height);
+                    ctx.fill();
+                }
+                
+                ctx.shadowBlur = 0; // reset
+            }
+        }
+
+        // Background Parallax
+        class Layer {
+            constructor(imageObj, speedModifier, color, yOffset, points) {
+                this.x = 0;
+                this.yOffset = yOffset;
+                this.speedModifier = speedModifier;
+                this.color = color;
+                this.points = points; // Pre-generated peaks for mountains
+                this.width = 2000;
+            }
+            update() {
+                this.speed = gameSpeed * this.speedModifier;
+                this.x -= this.speed;
+                if (this.x <= -this.width) {
+                    this.x += this.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                
+                // Draw twice for seamless loop
+                for (let i = 0; i < 2; i++) {
+                    let curX = this.x + (i * this.width);
+                    ctx.beginPath();
+                    ctx.moveTo(curX, canvas.height);
+                    
+                    for (let p = 0; p < this.points.length; p++) {
+                        ctx.lineTo(curX + this.points[p].x, canvas.height - groundHeight - this.points[p].y + this.yOffset);
+                    }
+                    
+                    ctx.lineTo(curX + this.width, canvas.height);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Generate rough mountain shapes
+        function generateMountains(width, segments, maxHeight) {
+            let pts = [];
+            let segmentWidth = width / segments;
+            for(let i=0; i<=segments; i++) {
+                pts.push({
+                    x: i * segmentWidth,
+                    y: Math.random() * maxHeight + (maxHeight/2)
+                });
+            }
+            return pts;
+        }
+
+        let player;
+        let obstacles = [];
+        let backgroundLayers = [];
+        let spawnTimer = 0;
+
+        function init() {
+            resize(); // Ensure proper dims
+            player = new Player();
+            obstacles = [];
+            score = 0;
+            gameSpeed = initialSpeed;
+            spawnTimer = 0;
+            
+            // Rebuild background on init to fit screen widths
+            const mtnFarPts = generateMountains(2000, 10, canvas.height * 0.4);
+            const mtnNearPts = generateMountains(2000, 20, canvas.height * 0.25);
+            
+            backgroundLayers = [
+                new Layer(null, 0.2, theme.mountainFar, 50, mtnFarPts),
+                new Layer(null, 0.5, theme.mountainNear, 0, mtnNearPts)
+            ];
+
+            updateScoreDisplay();
+        }
+
+        // --- Input Handling ---
+        const keys = {
+            jump: false,
+            duck: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            // Cheat code
+            if (e.key === '0' && !isPlaying && shopScreen.classList.contains('hidden')) {
+                hiScore = Math.max(hiScore, 4000);
+                ownsBoxel = true;
+                ownsGeo = true;
+                ownsImpossible = true;
+                ownsPacman = true;
+                ownsGhost = true;
+                ownsBitTrip = true;
+                ownsPikachu = true;
+                ownsMario = true;
+                ownsLuigi = true;
+
+                localStorage.setItem('hussValleyHiScore', hiScore);
+                localStorage.setItem('hussValleyOwnsBoxel', 'true');
+                localStorage.setItem('hussValleyOwnsGeo', 'true');
+                localStorage.setItem('hussValleyOwnsImpossible', 'true');
+                localStorage.setItem('hussValleyOwnsPacman', 'true');
+                localStorage.setItem('hussValleyOwnsGhost', 'true');
+                localStorage.setItem('hussValleyOwnsBitTrip', 'true');
+                localStorage.setItem('hussValleyOwnsPikachu', 'true');
+                localStorage.setItem('hussValleyOwnsMario', 'true');
+                localStorage.setItem('hussValleyOwnsLuigi', 'true');
+
+                hiScoreDisplay.innerText = Math.floor(hiScore).toString().padStart(5, '0');
+                updateSkinUI();
+                
+                // Visual feedback for cheat
+                menuTitle.innerText = "CHEAT ACTIVATED";
+                menuTitle.classList.replace('text-red-500', 'text-yellow-500');
+                setTimeout(() => {
+                    menuTitle.innerText = "ENTER THE VALLEY";
+                    menuTitle.classList.replace('text-yellow-500', 'text-red-500');
+                }, 1500);
+                return;
+            }
+
+            if (!isPlaying) {
+                if (e.code === 'Space' || e.code === 'Enter') startGame();
+                return;
+            }
+
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                if (!keys.jump) player.jump();
+                keys.jump = true;
+            }
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                player.duck();
+                keys.duck = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                keys.jump = false;
+            }
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                player.stand();
+                keys.duck = false;
+            }
+        });
+
+        // Mobile Controls
+        btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); if(isPlaying) player.jump(); });
+        btnDodge.addEventListener('touchstart', (e) => { e.preventDefault(); if(isPlaying) player.duck(); });
+        btnDodge.addEventListener('touchend', (e) => { e.preventDefault(); if(isPlaying) player.stand(); });
+
+        startBtn.addEventListener('click', startGame);
+        mainMenuBtn.addEventListener('click', showMainMenu);
+
+        function showMainMenu() {
+            menuTitle.innerText = "ENTER THE VALLEY";
+            menuTitle.classList.replace('text-red-600', 'text-red-500');
+            menuDesc.innerHTML = "Use <strong class=\"text-white\">SPACE / UP</strong> to Jump.<br>Use <strong class=\"text-white\">DOWN</strong> to Dodge.";
+            finalScoreDisplay.classList.add('hidden');
+            startBtn.innerText = "START RUN";
+            openShopBtn.classList.remove('hidden');
+            mainMenuBtn.classList.add('hidden');
+            updateSkinUI();
+            updateShopUI();
+        }
+
+        // --- Game Loop ---
+        function startGame() {
+            if (isPlaying) return;
+            
+            // Apply selected color
+            const hex = playerColorInput.value;
+            theme.player = hex;
+            theme.playerRGB = {
+                r: parseInt(hex.slice(1, 3), 16),
+                g: parseInt(hex.slice(3, 5), 16),
+                b: parseInt(hex.slice(5, 7), 16)
+            };
+            theme.playerGlow = `rgba(${theme.playerRGB.r}, ${theme.playerRGB.g}, ${theme.playerRGB.b}, 0.5)`;
+
+            init();
+            isPlaying = true;
+            menuScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                menuScreen.classList.add('hidden');
+                menuScreen.classList.remove('flex');
+            }, 300); // match transition duration
+            animate();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            
+            // Check High Score
+            if (score > hiScore) {
+                hiScore = score;
+                localStorage.setItem('hussValleyHiScore', hiScore);
+                hiScoreDisplay.innerText = Math.floor(hiScore).toString().padStart(5, '0');
+            }
+            
+            // Add coins based on score
+            const coinsEarned = Math.floor(score);
+            if (coinsEarned > 0) {
+                coins += coinsEarned;
+                localStorage.setItem('hussValleyCoins', coins);
+                coinDisplay.innerText = coins.toLocaleString();
+            }
+            
+            updateSkinUI();
+
+            // Update UI
+            menuTitle.innerText = "YOU DIED";
+            menuTitle.classList.replace('text-red-500', 'text-red-600');
+            menuDesc.innerHTML = `The valley claims another soul.<br><span class="text-yellow-400 mt-2 block">+${coinsEarned} Coins!</span>`;
+            finalScoreDisplay.classList.remove('hidden');
+            finalScoreDisplay.innerText = `Score: ${Math.floor(score).toString().padStart(5, '0')}`;
+            startBtn.innerText = "TRY AGAIN";
+            openShopBtn.classList.add('hidden'); // Hide shop button on death screen to keep layout simple
+            mainMenuBtn.classList.remove('hidden');
+            
+            menuScreen.classList.remove('hidden');
+            menuScreen.classList.add('flex');
+            // Small delay to ensure display:flex is applied before opacity transition
+            setTimeout(() => {
+                menuScreen.classList.remove('opacity-0');
+            }, 10);
+            
+            // Camera shake effect on canvas
+            canvas.style.transform = 'translate(5px, 5px)';
+            setTimeout(() => canvas.style.transform = 'translate(-5px, -5px)', 50);
+            setTimeout(() => canvas.style.transform = 'translate(5px, -5px)', 100);
+            setTimeout(() => canvas.style.transform = 'translate(0, 0)', 150);
+        }
+
+        function checkCollision(p, o) {
+            // AABB Collision with a slight forgiveness margin
+            const marginX = 10;
+            const marginY = 10;
+            return (
+                p.x < o.x + o.width - marginX &&
+                p.x + p.width > o.x + marginX &&
+                p.y < o.y + o.height - marginY &&
+                p.y + p.height > o.y + marginY
+            );
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.innerText = Math.floor(score).toString().padStart(5, '0');
+        }
+
+        function drawEnvironment() {
+            // Gradient Sky
+            let bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bgGradient.addColorStop(0, theme.bgTop);
+            bgGradient.addColorStop(1, theme.bgBottom);
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Parallax Mountains
+            backgroundLayers.forEach(layer => {
+                layer.update();
+                layer.draw();
+            });
+
+            // Fog over mountains
+            ctx.fillStyle = 'rgba(26, 16, 37, 0.6)';
+            ctx.fillRect(0, canvas.height - groundHeight - 100, canvas.width, 100);
+
+            // Ground Base
+            ctx.fillStyle = theme.ground;
+            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+
+            // Ground Top Line (Neon)
+            ctx.fillStyle = theme.groundLine;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = theme.groundLine;
+            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, 4);
+            ctx.shadowBlur = 0;
+            
+            // Moving grid lines on ground for speed illusion
+            ctx.strokeStyle = 'rgba(48, 27, 77, 0.3)';
+            ctx.lineWidth = 2;
+            const lineSpacing = 100;
+            let offset = -(score * 10) % lineSpacing; 
+            
+            ctx.beginPath();
+            for(let x = offset; x < canvas.width; x += lineSpacing) {
+                ctx.moveTo(x, canvas.height - groundHeight);
+                ctx.lineTo(x - 50, canvas.height); // angle back
+            }
+            ctx.stroke();
+        }
+
+        function animate() {
+            if (!isPlaying) return;
+            
+            animationId = requestAnimationFrame(animate);
+
+            // Clear and draw environment
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawEnvironment();
+
+            // Update Game Metrics
+            gameSpeed += speedIncrement;
+            if (gameSpeed > maxSpeed) gameSpeed = maxSpeed;
+            score += (gameSpeed * 0.05);
+            
+            if (Math.floor(score) % 5 === 0) {
+                updateScoreDisplay();
+            }
+
+            // Spawn Obstacles
+            spawnTimer--;
+            if (spawnTimer <= 0) {
+                obstacles.push(new Obstacle());
+                
+                // Progressive difficulty: Decrease spawn intervals as speed increases
+                const speedFactor = (gameSpeed - initialSpeed) / (maxSpeed - initialSpeed); // 0.0 to 1.0
+                
+                // Spawn timers drop significantly as you approach max speed
+                const currentMinSpawn = Math.max(15, 40 - (speedFactor * 25)); 
+                const currentMaxSpawn = Math.max(15, 120 - (speedFactor * 105)); 
+                
+                spawnTimer = currentMinSpawn + (Math.random() * currentMaxSpawn);
+            }
+
+            // Update & Draw Obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.update();
+                obs.draw();
+
+                // Collision Check
+                if (checkCollision(player, obs)) {
+                    gameOver();
+                    return;
+                }
+
+                if (obs.markedForDeletion) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // Update & Draw Player
+            player.update();
+            player.draw();
+        }
+
+        // Draw initial static screen
+        init();
+        drawEnvironment();
+        player.draw();
+
+    </script>
+</body>
+</html>
