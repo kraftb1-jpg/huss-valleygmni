@@ -319,6 +319,15 @@
                                 <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
                             </div>
                         </button>
+                        <!-- Pawn -->
+                        <button id="btnSkinPawn" class="relative w-20 h-20 border-2 border-gray-600 rounded-lg bg-gray-800 flex flex-col items-center justify-center transition-all hover:bg-gray-700">
+                            <div class="w-6 h-8 bg-green-500 mb-1" style="clip-path: polygon(50% 0%, 75% 25%, 60% 40%, 80% 100%, 20% 100%, 40% 40%, 25% 25%);"></div>
+                            <span class="text-[10px] text-gray-300 uppercase">Pawn</span>
+                            <div id="pawnLock" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg transition-opacity">
+                                <span class="text-xl">🔒</span>
+                                <span class="text-[10px] text-yellow-400 mt-1">SHOP</span>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
@@ -422,6 +431,18 @@
                             </div>
                         </div>
                         <button id="btnBuyPikachu" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
+                    </div>
+
+                    <!-- Chess Pawn -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-green-500 shadow-md" style="clip-path: polygon(50% 0%, 75% 25%, 60% 40%, 80% 100%, 20% 100%, 40% 40%, 25% 25%);"></div>
+                            <div class="text-left">
+                                <div class="font-bold text-white text-lg">Chess Pawn</div>
+                                <div class="text-sm text-gray-400">50,000 Coins</div>
+                            </div>
+                        </div>
+                        <button id="btnBuyPawn" class="btn px-4 py-2 bg-yellow-600 text-white rounded font-bold transition-colors">Buy</button>
                     </div>
 
                     <!-- Bit Trip -->
@@ -536,6 +557,7 @@
         const btnSkinLuigi = document.getElementById('btnSkinLuigi');
         const btnSkinSonic = document.getElementById('btnSkinSonic');
         const btnSkinDirt = document.getElementById('btnSkinDirt');
+        const btnSkinPawn = document.getElementById('btnSkinPawn');
         
         const invisLock = document.getElementById('invisLock');
         const susLock = document.getElementById('susLock');
@@ -552,6 +574,7 @@
         const luigiLock = document.getElementById('luigiLock');
         const sonicLock = document.getElementById('sonicLock');
         const dirtLock = document.getElementById('dirtLock');
+        const pawnLock = document.getElementById('pawnLock');
         const defaultSkinPreview = document.getElementById('defaultSkinPreview');
         
         // Shop UI
@@ -568,6 +591,7 @@
         const btnBuyLuigi = document.getElementById('btnBuyLuigi');
         const btnBuySonic = document.getElementById('btnBuySonic');
         const btnBuyDirt = document.getElementById('btnBuyDirt');
+        const btnBuyPawn = document.getElementById('btnBuyPawn');
         const closeShopBtn = document.getElementById('closeShopBtn');
 
         let activeSkin = localStorage.getItem('hussValleySkin') || 'default';
@@ -583,6 +607,7 @@
         let ownsLuigi = localStorage.getItem('hussValleyOwnsLuigi') === 'true';
         let ownsSonic = localStorage.getItem('hussValleyOwnsSonic') === 'true';
         let ownsDirt = localStorage.getItem('hussValleyOwnsDirt') === 'true';
+        let ownsPawn = localStorage.getItem('hussValleyOwnsPawn') === 'true';
 
         // Core Variables
         let gameSpeed = 0;
@@ -724,11 +749,18 @@
                 dirtLock.classList.remove('hidden');
                 if (activeSkin === 'dirt') activeSkin = 'default';
             }
+            
+            if (ownsPawn) {
+                pawnLock.classList.add('hidden');
+            } else {
+                pawnLock.classList.remove('hidden');
+                if (activeSkin === 'pawn') activeSkin = 'default';
+            }
 
             localStorage.setItem('hussValleySkin', activeSkin);
 
             // Highlight selected skin
-            [btnSkinDefault, btnSkinInvis, btnSkinSus, btnSkinChicken, btnSkinDino, btnSkinBoxel, btnSkinGeo, btnSkinImpossible, btnSkinPacman, btnSkinGhost, btnSkinBitTrip, btnSkinPikachu, btnSkinMario, btnSkinLuigi, btnSkinSonic, btnSkinDirt].forEach(btn => btn.classList.replace('border-cyan-400', 'border-gray-600'));
+            [btnSkinDefault, btnSkinInvis, btnSkinSus, btnSkinChicken, btnSkinDino, btnSkinBoxel, btnSkinGeo, btnSkinImpossible, btnSkinPacman, btnSkinGhost, btnSkinBitTrip, btnSkinPikachu, btnSkinMario, btnSkinLuigi, btnSkinSonic, btnSkinDirt, btnSkinPawn].forEach(btn => btn.classList.replace('border-cyan-400', 'border-gray-600'));
             
             if (activeSkin === 'default') {
                 btnSkinDefault.classList.replace('border-gray-600', 'border-cyan-400');
@@ -762,6 +794,8 @@
                 btnSkinSonic.classList.replace('border-gray-600', 'border-cyan-400');
             } else if (activeSkin === 'dirt') {
                 btnSkinDirt.classList.replace('border-gray-600', 'border-cyan-400');
+            } else if (activeSkin === 'pawn') {
+                btnSkinPawn.classList.replace('border-gray-600', 'border-cyan-400');
             }
         }
 
@@ -777,6 +811,7 @@
                 { owns: ownsPacman, btn: btnBuyPacman, price: 30000 },
                 { owns: ownsGhost, btn: btnBuyGhost, price: 30000 },
                 { owns: ownsPikachu, btn: btnBuyPikachu, price: 50000 },
+                { owns: ownsPawn, btn: btnBuyPawn, price: 50000 },
                 { owns: ownsMario, btn: btnBuyMario, price: 100000 },
                 { owns: ownsLuigi, btn: btnBuyLuigi, price: 100000 },
                 { owns: ownsSonic, btn: btnBuySonic, price: 120000 },
@@ -880,6 +915,10 @@
         btnSkinDirt.addEventListener('click', () => { 
             if (ownsDirt) { activeSkin = 'dirt'; updateSkinUI(); } 
         });
+        
+        btnSkinPawn.addEventListener('click', () => { 
+            if (ownsPawn) { activeSkin = 'pawn'; updateSkinUI(); } 
+        });
 
         // Shop Interactions
         openShopBtn.addEventListener('click', () => {
@@ -914,6 +953,7 @@
         setupBuyButton(btnBuyPacman, 30000, 'hussValleyOwnsPacman', () => ownsPacman = true);
         setupBuyButton(btnBuyGhost, 30000, 'hussValleyOwnsGhost', () => ownsGhost = true);
         setupBuyButton(btnBuyPikachu, 50000, 'hussValleyOwnsPikachu', () => ownsPikachu = true);
+        setupBuyButton(btnBuyPawn, 50000, 'hussValleyOwnsPawn', () => ownsPawn = true);
         setupBuyButton(btnBuyMario, 100000, 'hussValleyOwnsMario', () => ownsMario = true);
         setupBuyButton(btnBuyLuigi, 100000, 'hussValleyOwnsLuigi', () => ownsLuigi = true);
         setupBuyButton(btnBuySonic, 120000, 'hussValleyOwnsSonic', () => ownsSonic = true);
@@ -1439,6 +1479,52 @@
                     ctx.fillRect(bw*0.1, yOff + sqSize*0.7, bw*0.2, sqSize*0.15);
                     ctx.fillStyle = '#795548'; // Lighter brown
                     ctx.fillRect(bw*0.2, yOff + sqSize*0.3, bw*0.2, sqSize*0.15);
+                } else if (activeSkin === 'pawn') {
+                    const bw = this.width;
+                    const bh = this.height;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = theme.playerGlow;
+                    ctx.fillStyle = theme.player; // Ties to chosen color
+
+                    if (!this.isDucking) {
+                        // Base
+                        ctx.beginPath();
+                        ctx.moveTo(-bw/2, bh/2);
+                        ctx.lineTo(bw/2, bh/2);
+                        ctx.lineTo(bw*0.3, bh/2 - bh*0.2);
+                        ctx.lineTo(-bw*0.3, bh/2 - bh*0.2);
+                        ctx.fill();
+
+                        // Body
+                        ctx.beginPath();
+                        ctx.moveTo(-bw*0.3, bh/2 - bh*0.2);
+                        ctx.lineTo(bw*0.3, bh/2 - bh*0.2);
+                        ctx.lineTo(bw*0.15, -bh*0.1);
+                        ctx.lineTo(-bw*0.15, -bh*0.1);
+                        ctx.fill();
+
+                        // Collar
+                        ctx.fillRect(-bw*0.25, -bh*0.15, bw*0.5, bh*0.05);
+
+                        // Head
+                        ctx.beginPath();
+                        ctx.arc(0, -bh*0.3, bw*0.25, 0, Math.PI*2);
+                        ctx.fill();
+                    } else {
+                        // Squished pawn
+                        ctx.beginPath();
+                        ctx.moveTo(-bw/2, bh/2);
+                        ctx.lineTo(bw/2, bh/2);
+                        ctx.lineTo(bw*0.4, bh/2 - bh*0.3);
+                        ctx.lineTo(-bw*0.4, bh/2 - bh*0.3);
+                        ctx.fill();
+                        
+                        ctx.fillRect(-bw*0.3, bh/2 - bh*0.35, bw*0.6, bh*0.05);
+
+                        ctx.beginPath();
+                        ctx.arc(0, bh/2 - bh*0.5, bw*0.3, 0, Math.PI*2);
+                        ctx.fill();
+                    }
                 } else {
                     // Draw Default Player Body
                     ctx.shadowBlur = 15;
@@ -1634,6 +1720,7 @@
                 ownsLuigi = true;
                 ownsSonic = true;
                 ownsDirt = true;
+                ownsPawn = true;
 
                 localStorage.setItem('hussValleyHiScore', hiScore);
                 localStorage.setItem('hussValleyOwnsBoxel', 'true');
@@ -1647,6 +1734,7 @@
                 localStorage.setItem('hussValleyOwnsLuigi', 'true');
                 localStorage.setItem('hussValleyOwnsSonic', 'true');
                 localStorage.setItem('hussValleyOwnsDirt', 'true');
+                localStorage.setItem('hussValleyOwnsPawn', 'true');
 
                 hiScoreDisplay.innerText = Math.floor(hiScore).toString().padStart(5, '0');
                 updateSkinUI();
